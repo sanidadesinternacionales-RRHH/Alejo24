@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ALEJO 24 – Prototipo Web</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Librerías CDN solo para el prototipo (gráficos y fechas) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+</head>
+<body>
+  <header class="appbar">
+    <div class="brand">ALEJO 24</div>
+    <div class="role-switch">
+      <button id="btnUser" class="active">Usuario</button>
+      <button id="btnAdmin">Administrador</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- ==================== USUARIO ==================== -->
+    <section id="view-user">
+      <nav class="tabs">
+        <button data-u-tab="u-dashboard" class="active">Dashboard</button>
+        <button data-u-tab="u-agenda">Mi agenda</button>
+        <button data-u-tab="u-notif">Notificaciones</button>
+        <button data-u-tab="u-perfil">Solicitar cambio</button>
+      </nav>
+
+      <section id="u-dashboard" class="tab-section show">
+        <div class="kpis" id="u-kpis"></div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title">Agenda semanal</div>
+            <canvas id="u-week-chart" height="120"></canvas>
+            <div id="u-week-grid" class="calendar"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Notificaciones</div>
+            <ul id="u-notif-list" class="list"></ul>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Historial (mis cambios)</div>
+          <table id="u-bitacora" class="table"></table>
+        </div>
+      </section>
+
+      <section id="u-agenda" class="tab-section">
+        <div class="toolbar">
+          <label>Semana de
+            <input type="date" id="u-agenda-date">
+          </label>
+        </div>
+        <div id="u-agenda-grid" class="calendar large"></div>
+      </section>
+
+      <section id="u-notif" class="tab-section">
+        <div class="toolbar">
+          <button id="u-markall" class="ghost">Marcar todo leído</button>
+        </div>
+        <ul id="u-notif-page" class="list"></ul>
+      </section>
+
+      <section id="u-perfil" class="tab-section">
+        <div class="card">
+          <div class="card-title">Solicitar cambio de turno</div>
+          <form id="form-solicitud" class="form">
+            <div class="row">
+              <label>Fecha
+                <input type="date" name="fecha" required>
+              </label>
+              <label>Motivo
+                <input type="text" name="motivo" placeholder="Motivo de la solicitud" required>
+              </label>
+            </div>
+            <button class="primary" type="submit">Enviar solicitud</button>
+          </form>
+          <p class="hint">La solicitud crea una notificación para RR.HH. y se registra en la bitácora.</p>
+        </div>
+      </section>
+    </section>
+
+    <!-- ==================== ADMIN ==================== -->
+    <section id="view-admin" class="hidden">
+      <nav class="tabs">
+        <button data-a-tab="a-gestion" class="active">Gestión</button>
+        <button data-a-tab="a-busqueda">Búsqueda</button>
+        <button data-a-tab="a-registro">Registro</button>
+        <button data-a-tab="a-reglas">Reglas</button>
+        <button data-a-tab="a-reportes">Reportes</button>
+      </nav>
+
+      <section id="a-gestion" class="tab-section show">
+        <div class="toolbar">
+          <label>Fecha <input type="date" id="a-fecha"></label>
+          <label>Unidad
+            <select id="a-unidad"></select>
+          </label>
+          <label>Turno
+            <select id="a-turno"></select>
+          </label>
+          <button id="a-filtrar" class="primary">Buscar</button>
+          <button id="a-clear" class="ghost">Limpiar</button>
+          <div class="spacer"></div>
+          <button id="a-publicar" class="primary">Publicar seleccionados</button>
+          <button id="a-reprogramar" class="warn">Reprogramar</button>
+          <button id="a-anular" class="danger">Anular</button>
+          <button id="a-export" class="ghost">Exportar CSV</button>
+        </div>
+        <table id="a-tabla" class="table selectable"></table>
+      </section>
+
+      <section id="a-busqueda" class="tab-section">
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title">Filtros</div>
+            <form id="form-busqueda" class="form">
+              <label>Texto<input type="text" name="q" placeholder="perez, nocturno, DSMI"></label>
+              <label>Rango (YYYY-MM-DD .. YYYY-MM-DD)<input type="text" name="rango" placeholder="2025-10-01 .. 2025-10-31"></label>
+              <label>Estado
+                <select name="estado">
+                  <option value="">Todos</option>
+                  <option>PLANIFICADO</option>
+                  <option>PUBLICADO</option>
+                  <option>REPROGRAMADO</option>
+                  <option>ANULADO</option>
+                </select>
+              </label>
+              <button class="primary">Aplicar</button>
+            </form>
+          </div>
+          <div class="card">
+            <div class="card-title">Resultados</div>
+            <table id="a-resultados" class="table"></table>
+          </div>
+        </div>
+      </section>
+
+      <section id="a-registro" class="tab-section">
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title">Nueva asignación</div>
+            <form id="form-registro" class="form">
+              <div class="row">
+                <label>Personal<select name="id_personal" id="r-personal"></select></label>
+                <label>Unidad<select name="id_unidad" id="r-unidad"></select></label>
+              </div>
+              <div class="row">
+                <label>Tipo de turno<select name="id_tipo_turno" id="r-tipo"></select></label>
+                <label>Fecha<input type="date" name="fecha" required></label>
+              </div>
+              <label>Motivo (opcional)<input type="text" name="motivo" placeholder="Cobertura de servicio"></label>
+              <button class="primary" type="submit">Guardar planificado</button>
+            </form>
+          </div>
+          <div class="card">
+            <div class="card-title">Previsualización</div>
+            <div id="r-preview" class="preview"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="a-reglas" class="tab-section">
+        <div class="card">
+          <div class="card-title">Reglas por unidad</div>
+          <table id="a-reglas-tab" class="table editable"></table>
+          <button id="a-guardar-reglas" class="primary">Guardar cambios</button>
+        </div>
+      </section>
+
+      <section id="a-reportes" class="tab-section">
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title">Cobertura vs meta (hoy)</div>
+            <canvas id="chart-cobertura" height="160"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-title">Estados del día</div>
+            <canvas id="chart-estados" height="160"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Horas por persona y mes</div>
+          <canvas id="chart-horas" height="120"></canvas>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div>Prototipo educativo – ALEJO 24 • Datos locales (LocalStorage) • Listo para conectar a API REST (Spring Boot)</div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
